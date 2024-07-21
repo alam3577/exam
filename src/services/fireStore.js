@@ -5,7 +5,7 @@ import { db } from "../firbase/firebase";
 // Create
 export const createData = async (data) => {
     try {
-        const docRef = await addDoc(collection(db, "items"), data);
+        const docRef = await addDoc(collection(db, "candidate"), data);
         console.log("Document written with ID: ", docRef.id);
     } catch (e) {
         console.error("Error adding document: ", e);
@@ -14,12 +14,17 @@ export const createData = async (data) => {
 
 // Read
 export const readData = async () => {
-    const querySnapshot = await getDocs(collection(db, "items"));
-    let items = [];
-    querySnapshot.forEach((doc) => {
-        items.push({ id: doc.id, ...doc.data() });
-    });
-    return items;
+    try {
+        const querySnapshot = await getDocs(collection(db, "candidate"));
+        let items = [];
+        querySnapshot.forEach((doc) => {
+            items.push({ id: doc.id, ...doc.data() });
+        });
+        console.log({items}); // Log the items to verify
+        return items;
+    } catch (error) {
+        console.error("Error reading data: ", error);
+    }
 };
 
 // Update

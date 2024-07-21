@@ -23,6 +23,7 @@ code {
 }
 
 .signin-google-btn{
+  cursor: pointer;
   border: 1px solid black;
   display: flex;
   flex-direction: row;
@@ -59,7 +60,7 @@ code {
 
 .image-list {
   width: 48%;
-  height: 160px;
+  min-height: 160px;
   background: white;
   box-shadow: 2px 2px 20px 0px #dfdfdf;
   border-radius: 4px;
@@ -80,4 +81,50 @@ code {
   top: 0;
   right: -6px;
   margin-top: -13px;
+  cursor: pointer;
+}
+
+.evaluation-container{
+  display: flex;
+  flex-direction: column;
+  width: 80%;
+  margin: auto;
+  font-size: medium;
+  font-weight: 500;
+  gap: 20px;
+}
+
+.evaluation-container div{
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.evaluation-title{
+  margin: auto;
+  margin-top: 3rem;
+  font-size: larger;
+}
+
+.evaluation-search-title{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  flex-direction: column;
+}
+
+.evaluation-search-name{
+  font-size: larger;
+  font-weight: 600;
+  margin-top: 3rem;
+}
+.evaluation-search-roll{
+  font-size: large;
+  font-weight: 500;
+}
+
+.evaluation-search-tab{
+  margin-top: 2rem;
+  margin-bottom: 1rem;
 }

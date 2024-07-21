@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
-import { Button, Form } from 'react-bootstrap'
-import { Link, Navigate } from 'react-router-dom'
+import { Navigate } from 'react-router-dom'
 import { doSignInWithEmailAndPassword, doSignInWithGoogle } from '../../firbase/auth'
 import { useAuth } from '../../store/authContext'
 
@@ -33,9 +32,9 @@ const Login = () => {
 
     return (
         <div className='login-main-container'>
-            <div>Login</div>
-            {userLoggedIn && (<Navigate to={'/home'} replace={true} />)}
-            <Form style={{ width: '100%'}}>
+            <div style={{ fontWeight: 'bold', fontSize: '2rem', padding: '2rem 0rem' }}>Login</div>
+            {userLoggedIn && (<Navigate to={'/'} replace={true} />)}
+            {/* <Form style={{ width: '100%'}}>
                 <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
                     <Form.Label>Email address</Form.Label>
                     <Form.Control onChange={(e) => setEmail(e.target.value)} type="email" placeholder="name@example.com" />
@@ -45,12 +44,12 @@ const Login = () => {
                     <Form.Control onChange={(e) => setPassword(e.target.value)} type="text" placeholder="password" />
                 </Form.Group>
                 <Button className='submit-btn' onClick={(e) => onSubmit(e)} variant="outline-primary">Submit</Button>
-            </Form>
+            </Form> */}
             <div style={{width: "100%", margin: 'auto'}} >
-            <p style={{marginBottom: '0px'}} className="">Don't have an account? <Link to={'/register'} className="hover:underline font-bold">Sign up</Link></p>
-            <div >
+            {/* <p style={{marginBottom: '0px'}} className="">Don't have an account? <Link to={'/register'} className="hover:underline font-bold">Sign up</Link></p> */}
+            {/* <div >
                 <div style={{margin: 'auto'}}></div><div className=''>OR</div><div className=''></div>
-            </div>
+            </div> */}
             <div
                 disabled={isSigningIn}
                 onClick={(e) => onGoogleSignIn(e)}
