@@ -1,13 +1,12 @@
 import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Button } from "react-bootstrap";
 import Form from 'react-bootstrap/Form';
 import toast from "react-hot-toast";
+import { FaCamera } from "react-icons/fa";
 import { IoIosCloseCircle } from "react-icons/io";
 import { Navigate } from "react-router-dom";
-import Camera from "../../components/UI/Camera";
 import Loader from "../../components/UI/Loader";
-import WebcamModal from "../../components/UI/WebcamCapture";
 import { storage } from "../../firbase/firebase";
 import Modal from "../../Modal/ImageModal";
 import { createData, readData } from "../../services/fireStore";
@@ -22,6 +21,7 @@ function Candidate() {
     const [imageURL, setImageURL] = useState([]);
     const [webcamModalOpen, setWebcamModalOpen] = useState(false);
     const [loading, setLoading] = useState(false);
+    const fileInputRef = useRef(null);
     const a = useAuth();
     const userName = a?.currentUser?.displayName || '';
     const userEmail = a?.currentUser?.email || '';
@@ -56,30 +56,41 @@ function Candidate() {
         setCapturedImages((prev) => prev.filter((_, i) => i !== index));
     };
 
-    const dataURLtoBlob = (dataurl) => {
-        let arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1];
-        let bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
-        while (n--) {
-            u8arr[n] = bstr.charCodeAt(n);
+    const dataURLtoBlob = (dataURL) => {
+        const byteString = atob(dataURL.split(',')[1]);
+        const mimeString = dataURL.split(',')[0].split(':')[1].split(';')[0];
+        const ab = new ArrayBuffer(byteString.length);
+        const ia = new Uint8Array(ab);
+
+        for (let i = 0; i < byteString.length; i++) {
+            ia[i] = byteString.charCodeAt(i);
         }
-        return new Blob([u8arr], { type: mime });
+
+        return new Blob([ab], { type: mimeString });
     };
 
-
     const handleUpload = async () => {
-        console.log({ capturedImages })
-        const imageUrls = [];
-        for (let i = 0; i < capturedImages.length; i++) {
-            const imageSrc = capturedImages[i];
-            const imageRef = ref(storage, `images/${Date.now()}.jpg`);
-            await uploadBytesResumable(imageRef, dataURLtoBlob(imageSrc));
-            const downloadURL = await getDownloadURL(imageRef);
-            // setImageURL(prev => {
-            //     return [...prev, downloadURL]
-            // });
-            imageUrls.push(downloadURL)
+        try {
+            console.log({ capturedImages });
+            const imageUrls = [];
+
+            for (let i = 0; i < capturedImages.length; i++) {
+                const imageSrc = capturedImages[i];
+                const blob = await fetch(imageSrc).then(res => res.blob());
+                const imageName = Date.now() + "_image.jpg";
+                const imageRef = ref(storage, `images/${imageName}`);
+
+                await uploadBytesResumable(imageRef, blob);
+                const downloadURL = await getDownloadURL(imageRef);
+                imageUrls.push(downloadURL);
+            }
+
+            console.log('Uploaded Image URLs:', imageUrls);
+            return imageUrls;
+        } catch (error) {
+            console.error("Error uploading images:", error);
+            throw error;
         }
-        return imageUrls;
     };
 
     const handleOpenWebcamModal = () => {
@@ -92,10 +103,16 @@ function Candidate() {
     const handleCloseWebcamModal = () => {
         setWebcamModalOpen(false);
     };
-    const handleImageUpload = (url) => {
-        setCapturedImages((prev) => {
-            return [...prev, url]
-        });
+    const handleImageUpload = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const url = URL.createObjectURL(file);
+            console.log(url); // This URL can be used to display the captured image
+            // Handle the captured image here
+            setCapturedImages((prev) => {
+                return [...prev, url]
+            });
+        }
     };
     const handleAssessmentSubmit = async () => {
         if (!rollNumber) {
@@ -145,10 +162,9 @@ function Candidate() {
         }
     }
 
-    const startCamera = () => {
-        Camera.startCamera();
-// camera.takeSnapshot();
-    }
+    const openCamera = () => {
+        fileInputRef.current.click();
+    };
 
 
     return (
@@ -167,13 +183,6 @@ function Candidate() {
                 <div>Name: {userName}</div>
                 <div>Email: {userEmail}</div>
             </div>
-            <input accept="image/*" id="icon-button-file" type="file" capture="environment"/>
-            {/* {isCameraOn && <WebcamCapture setCapturedImages={setCapturedImages} />} */}
-            <WebcamModal
-                isOpen={webcamModalOpen}
-                onClose={handleCloseWebcamModal}
-                onCapture={handleImageUpload}
-            />
             <div className='image-container'>
                 {capturedImages.map((image, index) => (
                     <div key={index} className='image-list'> <img onClick={() => handleImageClick(image)} src={image} alt={`captured ${index}`} style={{ width: '100%', height: '100%' }} />
@@ -181,17 +190,25 @@ function Candidate() {
                     </div>
                 ))}
             </div>
-            <div className='capture-image d-flex gap-4'>
-                {!webcamModalOpen && <button className="btn btn-outline-success" onClick={() => handleImageCaptureClick()}>Capture Image</button>}
-                {webcamModalOpen && <button className="btn btn-outline-danger" onClick={() => handleCloseCameraClick()}> Close Camera </button>}
-                <Button className='submit-btn' disabled={loading} onClick={(e) => handleAssessmentSubmit(e)} variant="outline-success">
+            <div className='capture-image d-flex flex-column gap-4 w-100'>
+                {!webcamModalOpen && <div>
+                    <button className="camera-btn" style={{ margin: 'auto' }} onClick={openCamera}><div><FaCamera size='1.8rem' color="gray"/><div>Camera</div></div> </button>
+                    <input
+                        type="file"
+                        accept="image/*"
+                        capture="environment"
+                        ref={fileInputRef}
+                        onChange={handleImageUpload}
+                        style={{ display: 'none' }}
+                    />
+                </div>}
+                <Button className='submit-btn w-100 btn-block' disabled={loading} onClick={(e) => handleAssessmentSubmit(e)} variant="outline-success">
                     {
                         loading ? <Loader /> : 'Submit'
                     }
                 </Button>
             </div>
             <Modal isOpen={modalOpen} onClose={handleCloseModal} imageUrl={selectedImage} />
-            <button onClick={() => statCamera()}>Start Camera</button>
         </div>
     )
 }

@@ -129,3 +129,23 @@ code {
   margin-top: 2rem;
   margin-bottom: 1rem;
 }
+
+.camera-btn{
+  margin: auto;
+  width: 100%;
+  border: 0px;
+  border-radius: 6px;
+  box-shadow: 1px 2px 13px 0px #d1cdcd;
+  padding: 10px;
+}
+
+.camera-btn div {
+  display: flex;
+  font-weight: 500;
+  font-size: medium;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  color: #525252;
+}
