@@ -1,23 +1,24 @@
-import logo from './logo.svg';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import { Toaster } from 'react-hot-toast';
+import { Route, Routes } from 'react-router-dom';
 import './App.css';
+import Header from './components/nav/Header';
+import Login from './pages/auth/Login';
+import Candidate from './pages/candidate/Candidate';
+import Evaluation from './pages/evaluation/Evaluation';
+import EvaluationSearch from './pages/evaluationSearch/EvaluationSearch';
 
 function App() {
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <Header />
+      <Routes>
+        <Route path='/' element={<Candidate />} />
+        <Route path='/login' element={<Login />} />
+        <Route path='/evaluation' element={<Evaluation />} />
+        <Route path='/evaluation-search' element={<EvaluationSearch />} />
+      </Routes>
+      <Toaster />
     </div>
   );
 }

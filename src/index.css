@@ -11,3 +11,73 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+.login-main-container{
+  width: 80%;
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 11px;
+    align-items: center;
+    justify-content: center;
+}
+
+.signin-google-btn{
+  border: 1px solid black;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  margin: auto;
+  padding: 10px;
+  gap: 10px;
+  font-weight: 500;
+  border-radius: 6px;
+}
+
+.main-container{
+  width: 80%;
+  margin: auto;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 10px;
+  
+}
+
+.image-container{
+  display: flex;
+}
+
+.candidate-title{
+  font-size: larger;
+  font-weight: 500;
+  margin: auto;
+  padding: 2rem 0;
+}
+
+.image-list {
+  width: 48%;
+  height: 160px;
+  background: white;
+  box-shadow: 2px 2px 20px 0px #dfdfdf;
+  border-radius: 4px;
+  position: relative;
+}
+
+.image-container{
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.close-img{
+  position: absolute;
+  top: 0;
+  right: -6px;
+  margin-top: -13px;
+}
