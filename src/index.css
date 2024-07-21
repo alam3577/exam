@@ -82,6 +82,7 @@ code {
   right: -6px;
   margin-top: -13px;
   cursor: pointer;
+  background-color: transparent;
 }
 
 .evaluation-container{

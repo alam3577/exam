@@ -71,27 +71,14 @@ function Candidate() {
         for (let i = 0; i < capturedImages.length; i++) {
             const imageSrc = capturedImages[i];
             const imageRef = ref(storage, `images/${Date.now()}.jpg`);
-            const uploadTask = uploadBytesResumable(imageRef, dataURLtoBlob(imageSrc));
-            console.log({ uploadTask })
-            uploadTask.on(
-                "state_changed",
-                (snapshot) => {
-                    // const progress = Math.round(
-                    //     (snapshot.bytesTransferred / snapshot.totalBytes) * 100
-                    // );
-                    // setUploadProgress((prev) => ({ ...prev, [i]: progress }));
-                },
-                (error) => {
-                    console.log(error);
-                },
-                async () => {
-                    const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-                    setImageURL(prev => {
-                        return [...prev, downloadURL]
-                    });
-                }
-            );
+            await uploadBytesResumable(imageRef, dataURLtoBlob(imageSrc));
+            const downloadURL = await getDownloadURL(imageRef);
+            // setImageURL(prev => {
+            //     return [...prev, downloadURL]
+            // });
+            imageUrls.push(downloadURL)
         }
+        return imageUrls;
     };
 
     const handleOpenWebcamModal = () => {
@@ -126,8 +113,7 @@ function Candidate() {
         setLoading(true);
         try {
             const urls = await handleUpload() || [];
-            console.log({ imageURL })
-            if (!imageURL?.length) {
+            if (!urls?.length) {
                 toast.error('Please upload image');
                 setLoading(false)
                 return;
@@ -151,6 +137,7 @@ function Candidate() {
             setImageURL([]);
             toast.success('Congratulation, you have successfully submitted the assessment')
         } catch (error) {
+            console.log({ error })
             toast.error('Failed to submit the assessment, please try again')
         } finally {
             setLoading(false);
@@ -174,6 +161,7 @@ function Candidate() {
                 <div>Name: {userName}</div>
                 <div>Email: {userEmail}</div>
             </div>
+            <input accept="image/*" id="icon-button-file" type="file" capture="environment"/>
             {/* {isCameraOn && <WebcamCapture setCapturedImages={setCapturedImages} />} */}
             <WebcamModal
                 isOpen={webcamModalOpen}
@@ -183,7 +171,7 @@ function Candidate() {
             <div className='image-container'>
                 {capturedImages.map((image, index) => (
                     <div key={index} className='image-list'> <img onClick={() => handleImageClick(image)} src={image} alt={`captured ${index}`} style={{ width: '100%', height: '100%' }} />
-                        <span onClick={() => handleImageRemoval(index)} className='close-img'><IoIosCloseCircle color='red' size='1.5rem' /></span>
+                        <span onClick={() => handleImageRemoval(index)} className='close-img'><IoIosCloseCircle style={{ borderRadius: '50%', backgroundColor: 'white' }} color='red' size='1.5rem' /></span>
                     </div>
                 ))}
             </div>
