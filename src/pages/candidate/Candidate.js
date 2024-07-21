@@ -5,6 +5,7 @@ import Form from 'react-bootstrap/Form';
 import toast from "react-hot-toast";
 import { IoIosCloseCircle } from "react-icons/io";
 import { Navigate } from "react-router-dom";
+import Camera from "../../components/UI/Camera";
 import Loader from "../../components/UI/Loader";
 import WebcamModal from "../../components/UI/WebcamCapture";
 import { storage } from "../../firbase/firebase";
@@ -144,6 +145,11 @@ function Candidate() {
         }
     }
 
+    const startCamera = () => {
+        Camera.startCamera();
+// camera.takeSnapshot();
+    }
+
 
     return (
         <div className='main-container'>
@@ -185,6 +191,7 @@ function Candidate() {
                 </Button>
             </div>
             <Modal isOpen={modalOpen} onClose={handleCloseModal} imageUrl={selectedImage} />
+            <button onClick={() => statCamera()}>Start Camera</button>
         </div>
     )
 }
