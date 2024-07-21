@@ -51,7 +51,7 @@ const WebcamModal = ({ isOpen, onClose, onCapture }) => {
                     audio={false}
                     ref={webcamRef}
                     screenshotFormat="image/jpeg"
-                    videoConstraints={{ facingMode: 'user', aspectRatio: ratio }}
+                    videoConstraints={{ facingMode: { exact: "environment" }, aspectRatio: ratio }}
                     style={{ width: '100%', height: '100%' }}
                 />
                 <button onClick={capture} className="webcamp-capture-button">Capture</button>
