@@ -5,68 +5,57 @@ import Form from 'react-bootstrap/Form';
 import toast from "react-hot-toast";
 import { FaCamera } from "react-icons/fa";
 import { IoIosCloseCircle } from "react-icons/io";
-import { Navigate } from "react-router-dom";
+import { Navigate, useParams } from "react-router-dom";
 import Loader from "../../components/UI/Loader";
 import { storage } from "../../firbase/firebase";
 import Modal from "../../Modal/ImageModal";
-import { createData, readData } from "../../services/fireStore";
+import { getBatchDetailsById } from "../../services/batch";
+import { getExamDetailsById } from "../../services/exam";
+import { createData } from "../../services/fireStore";
 import { useAuth } from "../../store/authContext";
 
 function Candidate() {
-    const [isCameraOn, setIsCameraOn] = useState(false);
     const [capturedImages, setCapturedImages] = useState([]);
     const [modalOpen, setModalOpen] = useState(false);
     const [selectedImage, setSelectedImage] = useState('');
     const [rollNumber, setRollNumber] = useState('');
     const [imageURL, setImageURL] = useState([]);
-    const [webcamModalOpen, setWebcamModalOpen] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [examDetails, setExamDetails] = useState({});
+    const [selectedCandidate, setSelectedCandidate] = useState({});
+    const [candidateData, setCandidateData] = useState([]);
     const fileInputRef = useRef(null);
+    const { id, batchId } = useParams();
     const a = useAuth();
     const userName = a?.currentUser?.displayName || '';
     const userEmail = a?.currentUser?.email || '';
     console.log({ a })
-    const handleImageCaptureClick = () => {
-        setIsCameraOn(true);
-        handleOpenWebcamModal(true);
-    }
     const handleImageClick = (url) => {
         setSelectedImage(url);
         setModalOpen(true);
     };
 
-    const getData = async () => {
-        const res = await readData()
+    const getData = async (id) => {
+        const res = await getExamDetailsById(id)
+        console.log({res})
+        setExamDetails(res);
+        const batchData = await getBatchDetailsById(res?.batch_id);
+        setCandidateData(batchData?.candidates_list || []);
         console.log({ res })
     }
 
+    console.log({ examDetails });
     useEffect(() => {
-        getData()
-    }, []);
+        getData(id)
+    }, [id]);
 
     const handleCloseModal = () => {
         setModalOpen(false);
         setSelectedImage('');
     };
-    const handleCloseCameraClick = () => {
-        setIsCameraOn(false);
-    }
 
     const handleImageRemoval = (index) => {
         setCapturedImages((prev) => prev.filter((_, i) => i !== index));
-    };
-
-    const dataURLtoBlob = (dataURL) => {
-        const byteString = atob(dataURL.split(',')[1]);
-        const mimeString = dataURL.split(',')[0].split(':')[1].split(';')[0];
-        const ab = new ArrayBuffer(byteString.length);
-        const ia = new Uint8Array(ab);
-
-        for (let i = 0; i < byteString.length; i++) {
-            ia[i] = byteString.charCodeAt(i);
-        }
-
-        return new Blob([ab], { type: mimeString });
     };
 
     const handleUpload = async () => {
@@ -93,16 +82,8 @@ function Candidate() {
         }
     };
 
-    const handleOpenWebcamModal = () => {
-        setWebcamModalOpen(true);
-    };
-
     const { userLoggedIn } = useAuth()
 
-
-    const handleCloseWebcamModal = () => {
-        setWebcamModalOpen(false);
-    };
     const handleImageUpload = (e) => {
         const file = e.target.files[0];
         if (file) {
@@ -131,6 +112,7 @@ function Candidate() {
         setLoading(true);
         try {
             const urls = await handleUpload() || [];
+            console.log({urls})
             if (!urls?.length) {
                 toast.error('Please upload image');
                 setLoading(false)
@@ -143,13 +125,15 @@ function Candidate() {
                 evaluation_details: {
                     score: "",
                     comments: "",
-                    evaluation_status: "",
+                    evaluation_status: "pending",
                 },
                 submissions: {
-                    raw: [...imageURL],
+                    raw: [...urls],
                     processed: []
                 },
-                submission_locked: "true"
+                submission_locked: "true",
+                exam_id: id,
+                batch_id: batchId
             });
             setCapturedImages([]);
             setImageURL([]);
@@ -167,20 +151,36 @@ function Candidate() {
     };
 
 
+
+    const handleRollNoChange = (e) => {
+        const roll = e.target.value;
+        setRollNumber(roll);
+        const selectedCandidate = [...candidateData]?.find(elem => elem.roll_number === roll);
+        setSelectedCandidate(selectedCandidate);
+    }
+
+    console.log({candidateData})
     return (
         <div className='main-container'>
             {!userLoggedIn && (<Navigate to={'/login'} replace={true} />)}
-            <div className='candidate-title'>Exam Name</div>
+            <div className='candidate-title text-capitalize'>{(examDetails?.name && (examDetails?.name + ' Exam')) || 'Exam Name'}</div>
             <div className='w-100'>
-                <Form.Select aria-label="Default select example" onChange={(e) => setRollNumber(e.target.value)}>
-                    <option>Open this select menu</option>
-                    <option value="1">One</option>
-                    <option value="2">Two</option>
-                    <option value="3">Three</option>
+                <Form.Select aria-label="Default select example" onChange={(e) => handleRollNoChange(e)}>
+                    <option value=''>Select Roll No.</option>
+                    {
+                        (candidateData || [])?.map(elem => (
+                            <option key={elem?.roll_number} value={elem?.roll_number}>{elem?.roll_number}</option>
+                        ))
+                    }
                 </Form.Select>
             </div>
             <div>
-                <div>Name: {userName}</div>
+                { Object.entries(selectedCandidate)?.length ?
+                    <>
+                        <div>Name: {selectedCandidate?.candidate_name || userName}</div>
+                        <div>Place: {selectedCandidate?.place}</div>
+                    </> : null
+                }
                 <div>Email: {userEmail}</div>
             </div>
             <div className='image-container'>
@@ -191,8 +191,8 @@ function Candidate() {
                 ))}
             </div>
             <div className='capture-image d-flex flex-column gap-4 w-100'>
-                {!webcamModalOpen && <div>
-                    <button className="camera-btn" style={{ margin: 'auto' }} onClick={openCamera}><div><FaCamera size='1.8rem' color="gray"/><div>Camera</div></div> </button>
+                <div>
+                    <button className="camera-btn" style={{ margin: 'auto' }} onClick={openCamera}><div><FaCamera size='1.8rem' color="gray" /><div>Camera</div></div> </button>
                     <input
                         type="file"
                         accept="image/*"
@@ -201,7 +201,7 @@ function Candidate() {
                         onChange={handleImageUpload}
                         style={{ display: 'none' }}
                     />
-                </div>}
+                </div>
                 <Button className='submit-btn w-100 btn-block' disabled={loading} onClick={(e) => handleAssessmentSubmit(e)} variant="outline-success">
                     {
                         loading ? <Loader /> : 'Submit'

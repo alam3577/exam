@@ -33,7 +33,7 @@ const Login = () => {
     return (
         <div className='login-main-container'>
             <div style={{ fontWeight: 'bold', fontSize: '2rem', padding: '2rem 0rem' }}>Login</div>
-            {userLoggedIn && (<Navigate to={'/'} replace={true} />)}
+            {userLoggedIn && (<Navigate to={'/admin'} replace={true} />)}
             {/* <Form style={{ width: '100%'}}>
                 <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
                     <Form.Label>Email address</Form.Label>

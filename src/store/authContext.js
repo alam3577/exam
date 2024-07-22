@@ -11,6 +11,7 @@ export function useAuth() {
 
 export function AuthProvider({ children }) {
     const [currentUser, setCurrentUser] = useState(null);
+    const [isAdmin, setIsAdmin] = useState();
     const [userLoggedIn, setUserLoggedIn] = useState(false);
     const [isEmailUser, setIsEmailUser] = useState(false);
     const [isGoogleUser, setIsGoogleUser] = useState(false);
