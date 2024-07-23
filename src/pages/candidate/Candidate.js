@@ -14,6 +14,8 @@ import { getExamDetailsById } from "../../services/exam";
 import { createData } from "../../services/fireStore";
 import { useAuth } from "../../store/authContext";
 
+import imageCompression from 'browser-image-compression';
+
 function Candidate() {
     const [capturedImages, setCapturedImages] = useState([]);
     const [modalOpen, setModalOpen] = useState(false);
@@ -58,6 +60,20 @@ function Candidate() {
         setCapturedImages((prev) => prev.filter((_, i) => i !== index));
     };
 
+    const compressImage = async (file) => {
+        const options = {
+            maxSizeMB: 1,
+            maxWidthOrHeight: 1920,
+            useWebWorker: true,
+        };
+        try {
+            return await imageCompression(file, options);
+        } catch (error) {
+            console.error("Image compression failed:", error);
+            throw error;
+        }
+    }
+
     const handleUpload = async () => {
         try {
             console.log({ capturedImages });
@@ -66,11 +82,12 @@ function Candidate() {
             for (let i = 0; i < capturedImages.length; i++) {
                 const imageSrc = capturedImages[i];
                 const blob = await fetch(imageSrc).then(res => res.blob());
+                const compressedBlob = await compressImage(blob);
                 const imageName = Date.now() + "_image.jpg";
                 const imageRef = ref(storage, `images/${imageName}`);
 
                 await uploadBytesResumable(imageRef, blob);
-                const downloadURL = await getDownloadURL(imageRef);
+                const downloadURL = await getDownloadURL(compressedBlob);
                 imageUrls.push(downloadURL);
             }
 
@@ -88,8 +105,7 @@ function Candidate() {
         const file = e.target.files[0];
         if (file) {
             const url = URL.createObjectURL(file);
-            console.log(url); // This URL can be used to display the captured image
-            // Handle the captured image here
+            console.log(url);
             setCapturedImages((prev) => {
                 return [...prev, url]
             });

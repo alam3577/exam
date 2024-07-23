@@ -20,6 +20,7 @@ function App() {
         <Route path='/evaluation' element={<Evaluation />} />
         <Route path='/evaluation-search/:id/:batchId/:rollNo' element={<EvaluationSearch />} />
         <Route path='/admin' element={<Admin />} />
+        <Route path='/' element={<Admin />} />
         <Route path='/candidate-details/:batchId/:id' element={<CandidateDetails />} />
       </Routes>
       <Toaster />

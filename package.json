@@ -8,6 +8,7 @@
     "@testing-library/user-event": "^13.5.0",
     "@uidotdev/usehooks": "^2.4.1",
     "bootstrap": "^5.3.3",
+    "browser-image-compression": "^2.0.2",
     "copy-to-clipboard": "^3.3.3",
     "firebase": "^10.12.4",
     "firebase-tools": "^13.13.3",
