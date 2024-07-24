@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Button, Form, Nav } from 'react-bootstrap';
+import toast from 'react-hot-toast';
 import { useParams } from 'react-router-dom';
+import Loader from '../../components/UI/Loader';
 import Modal from '../../Modal/ImageModal';
 import { findFilteredCandidateData, updateEvaluationDetails } from '../../services/fireStore';
 
@@ -9,6 +11,8 @@ function EvaluationSearch() {
   const [submissionsImage, setSubmissionImage] = useState([])
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [loadingContent, setLoadingContent] = useState(false);
   const [newEvaluationData, setNewEvaluationData] = useState({
     score: '',
     comment: ''
@@ -23,9 +27,17 @@ function EvaluationSearch() {
     setModalOpen(true);
   };
   const getData = async (id, batchId, rollNo) => {
-    const res = await findFilteredCandidateData(id, batchId, rollNo)
-    setCandidateData(res[0]);
-    setSubmissionImage([...res[0]?.submissions?.raw])
+    setLoading(true)
+    try {
+      const res = await findFilteredCandidateData({ examId: id, batchId, rollNumber: rollNo })
+      console.log({ res })
+      setCandidateData(res[0]);
+      setSubmissionImage([res[0]?.submissions?.raw])
+    } catch (error) {
+    } finally {
+      setLoading(false)
+    }
+
   }
 
   console.log({ candidateData })
@@ -54,20 +66,22 @@ function EvaluationSearch() {
       comments: newEvaluationData?.comment,
       evaluation_status: 'completed'
     };
+    setLoadingContent(true);
     try {
       await updateEvaluationDetails(candidateData?.id, newEvaluationDetails)
-      
+      toast.success('Evaluation updated')
     } catch (error) {
-      
+      toast.success('Failed to update Evaluation')
+    } finally {
+      setLoadingContent(false);
     }
   }
   return (
-    <div style={{width: "80%", margin: 'auto'}}>
+    <div style={{ width: "80%", margin: 'auto' }}>
       <div className='evaluation-search-title'>
         <div className='evaluation-search-name'>Name: {candidateData?.candidate_name || 'Candidate Name'}</div>
         <div className='evaluation-search-roll'>Roll Number: {candidateData?.roll_number}</div>
       </div>
-      {candidateData?.evaluation_details?.evaluation_status === "completed" ? <div className='text-success fs-6 fw-bold'>**Evaluation Completed</div> : null}
       <div className='evaluation-search-tab'>
         <Nav fill variant="tabs" defaultActiveKey="/home">
           <Nav.Item onClick={handleRowClick}>
@@ -79,32 +93,34 @@ function EvaluationSearch() {
         </Nav>
       </div>
       <div className='image-container'>
-        {submissionsImage?.length ? (submissionsImage || []).map((image, index) => (
+        {loading ? <Loader /> : (submissionsImage?.length ? (submissionsImage || []).map((image, index) => (
           <div key={index} className='image-list-ev'> <img onClick={() => handleImageClick(image)} src={image} alt={`captured ${index}`} style={{ width: '100%', height: '100%' }} />
             {/* <span className='close-img'><IoIosCloseCircle color='red' size='1.5rem' /></span> */}
           </div>
-        )) : <p>No Image found</p>}
+        )) : <p>No Image found</p>)}
       </div>
 
       <Form className='w-100 mt-3'>
         <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
           <Form.Label style={{ fontWeight: '600' }}>Score</Form.Label>
-          <Form.Control value={candidateData?.evaluation_details?.score} onChange={(e) => {
+          <Form.Control value={newEvaluationData?.score || candidateData?.evaluation_details?.score} onChange={(e) => {
             setNewEvaluationData(prev => {
-              return {...newEvaluationData, score: e.target.value}
+              return { ...newEvaluationData, score: e.target.value }
             })
           }} type="email" placeholder="Enter Score" />
         </Form.Group>
         <Form.Group className="mb-3" controlId="exampleForm.ControlTextarea1">
           <Form.Label style={{ fontWeight: '600' }}>Comments</Form.Label>
-          <Form.Control as="textarea" value={candidateData?.evaluation_details?.comments} onChange={(e) => {
+          <Form.Control as="textarea" value={newEvaluationData?.comment || candidateData?.evaluation_details?.comments} onChange={(e) => {
             setNewEvaluationData(prev => {
-              return {...newEvaluationData, comment: e.target.value}
+              return { ...newEvaluationData, comment: e.target.value }
             })
           }} rows={3} />
         </Form.Group>
       </Form>
-      <Button onClick={handleUpdate} className='w-100' variant='outline-success mb-4'>Submit</Button>
+      <Button onClick={handleUpdate} className='w-100' variant='outline-success mb-4'>
+        {loadingContent ? <Loader /> : 'Submit'}
+        </Button>
       <Modal isOpen={modalOpen} onClose={handleCloseModal} imageUrl={selectedImage} />
 
     </div>

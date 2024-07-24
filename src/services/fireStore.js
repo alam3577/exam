@@ -5,7 +5,7 @@ import { db } from "../firbase/firebase";
 // Create
 export const createData = async (data) => {
     try {
-        const docRef = await addDoc(collection(db, "candidate"), data);
+        const docRef = await addDoc(collection(db, "evaluations"), data);
         console.log("Document written with ID: ", docRef.id);
     } catch (e) {
         console.error("Error adding document: ", e);
@@ -13,7 +13,7 @@ export const createData = async (data) => {
 };
 
 export const updateEvaluationDetails = async (documentId, newEvaluationDetails) => {
-    const docRef = doc(db, 'candidate', documentId);
+    const docRef = doc(db, 'evaluations', documentId);
 
     try {
         await updateDoc(docRef, {
@@ -27,17 +27,26 @@ export const updateEvaluationDetails = async (documentId, newEvaluationDetails) 
     }
 };
 
-export const findFilteredCandidateData = async (examId, batchId, rollNumber) => {
+export const findFilteredCandidateData = async ({examId, batchId, rollNumber}) => {
     // Create a reference to the collection
-    const candidateCollectionRef = collection(db, 'candidate');
+    const candidateCollectionRef = collection(db, 'evaluations');
 
     // Create a query to find documents that match the specified criteria
-    const q = query(
-        candidateCollectionRef,
-        where('exam_id', '==', examId),
-        where('roll_number', '==', rollNumber),
-        where('batch_id', '==', batchId)
-    );
+    const conditions = [];
+
+    // Add conditions to the array dynamically based on the provided parameters
+    if (examId) {
+        conditions.push(where('exam_id', '==', examId));
+    }
+    if (batchId) {
+        conditions.push(where('batch_id', '==', batchId));
+    }
+    if (rollNumber) {
+        conditions.push(where('roll_number', '==', rollNumber));
+    }
+
+    // Create a query with the dynamic conditions
+    const q = query(candidateCollectionRef, ...conditions);
 
     try {
         // Execute the query and get the matching documents
@@ -65,7 +74,7 @@ export const findFilteredCandidateData = async (examId, batchId, rollNumber) => 
 // Read
 export const readData = async () => {
     try {
-        const querySnapshot = await getDocs(collection(db, "candidate"));
+        const querySnapshot = await getDocs(collection(db, "evaluations"));
         let items = [];
         querySnapshot.forEach((doc) => {
             items.push({ id: doc.id, ...doc.data() });

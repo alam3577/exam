@@ -11,7 +11,7 @@ import { storage } from "../../firbase/firebase";
 import Modal from "../../Modal/ImageModal";
 import { getBatchDetailsById } from "../../services/batch";
 import { getExamDetailsById } from "../../services/exam";
-import { createData } from "../../services/fireStore";
+import { createData, findFilteredCandidateData } from "../../services/fireStore";
 import { useAuth } from "../../store/authContext";
 
 import imageCompression from 'browser-image-compression';
@@ -26,6 +26,7 @@ function Candidate() {
     const [examDetails, setExamDetails] = useState({});
     const [selectedCandidate, setSelectedCandidate] = useState({});
     const [candidateData, setCandidateData] = useState([]);
+    const [isAssessmentSubmitted, setIsAssessmentSubmitted] = useState(false);
     const fileInputRef = useRef(null);
     const { id, batchId } = useParams();
     const a = useAuth();
@@ -39,7 +40,7 @@ function Candidate() {
 
     const getData = async (id) => {
         const res = await getExamDetailsById(id)
-        console.log({res})
+        console.log({ res })
         setExamDetails(res);
         const batchData = await getBatchDetailsById(res?.batch_id);
         setCandidateData(batchData?.candidates_list || []);
@@ -60,20 +61,6 @@ function Candidate() {
         setCapturedImages((prev) => prev.filter((_, i) => i !== index));
     };
 
-    const compressImage = async (file) => {
-        const options = {
-            maxSizeMB: 1,
-            maxWidthOrHeight: 1920,
-            useWebWorker: true,
-        };
-        try {
-            return await imageCompression(file, options);
-        } catch (error) {
-            console.error("Image compression failed:", error);
-            throw error;
-        }
-    }
-
     const handleUpload = async () => {
         try {
             console.log({ capturedImages });
@@ -86,8 +73,8 @@ function Candidate() {
                 const imageName = Date.now() + "_image.jpg";
                 const imageRef = ref(storage, `images/${imageName}`);
 
-                await uploadBytesResumable(imageRef, blob);
-                const downloadURL = await getDownloadURL(compressedBlob);
+                await uploadBytesResumable(imageRef, compressedBlob);
+                const downloadURL = await getDownloadURL(imageRef);
                 imageUrls.push(downloadURL);
             }
 
@@ -95,6 +82,20 @@ function Candidate() {
             return imageUrls;
         } catch (error) {
             console.error("Error uploading images:", error);
+            throw error;
+        }
+    };
+
+    const compressImage = async (file) => {
+        const options = {
+            maxSizeMB: 1,
+            maxWidthOrHeight: 1920,
+            useWebWorker: true,
+        };
+        try {
+            return await imageCompression(file, options);
+        } catch (error) {
+            console.error("Image compression failed:", error);
             throw error;
         }
     };
@@ -111,6 +112,19 @@ function Candidate() {
             });
         }
     };
+
+    useEffect(() => {
+        (async () => {
+            if (id && batchId && rollNumber) {
+                const res = await findFilteredCandidateData({examId: id, batchId: batchId, rollNumber: rollNumber});
+                if(res?.length && res?.evaluation_details?.evaluation_status === 'pending'){
+                    setIsAssessmentSubmitted(true)
+                }
+                console.log({ res });
+            }
+        })()
+    }, [rollNumber, id, batchId])
+    console.log({ selectedCandidate })
     const handleAssessmentSubmit = async () => {
         if (!rollNumber) {
             toast.error('Please select roll no. to submit the assessment');
@@ -128,14 +142,14 @@ function Candidate() {
         setLoading(true);
         try {
             const urls = await handleUpload() || [];
-            console.log({urls})
+            console.log({ urls })
             if (!urls?.length) {
                 toast.error('Please upload image');
                 setLoading(false)
                 return;
             }
             await createData({
-                candidate_name: userName,
+                candidate_name: selectedCandidate?.name,
                 candidate_email: userEmail,
                 roll_number: rollNumber,
                 evaluation_details: {
@@ -175,11 +189,14 @@ function Candidate() {
         setSelectedCandidate(selectedCandidate);
     }
 
-    console.log({candidateData})
+    console.log({ candidateData })
     return (
         <div className='main-container'>
             {!userLoggedIn && (<Navigate to={'/login'} replace={true} />)}
-            <div className='candidate-title text-capitalize'>{(examDetails?.name && (examDetails?.name + ' Exam')) || 'Exam Name'}</div>
+            <div className='candidate-title text-capitalize'>
+            <div className='text-capitalize m-auto'>Semester Name: {examDetails?.batch_name ? examDetails?.batch_name : null}</div>
+            <div className='text-capitalize m-auto'>Exam Name: {examDetails?.name ? examDetails?.name : null}</div>
+            </div>
             <div className='w-100'>
                 <Form.Select aria-label="Default select example" onChange={(e) => handleRollNoChange(e)}>
                     <option value=''>Select Roll No.</option>
@@ -191,13 +208,13 @@ function Candidate() {
                 </Form.Select>
             </div>
             <div>
-                { Object.entries(selectedCandidate)?.length ?
+                {Object.entries(selectedCandidate)?.length ?
                     <>
-                        <div>Name: {selectedCandidate?.candidate_name || userName}</div>
+                        <div>Name: {selectedCandidate?.name || userName}</div>
                         <div>Place: {selectedCandidate?.place}</div>
                     </> : null
                 }
-                <div>Email: {userEmail}</div>
+                {/* <div>Email: {userEmail}</div> */}
             </div>
             <div className='image-container'>
                 {capturedImages.map((image, index) => (
@@ -218,9 +235,9 @@ function Candidate() {
                         style={{ display: 'none' }}
                     />
                 </div>
-                <Button className='submit-btn w-100 btn-block' disabled={loading} onClick={(e) => handleAssessmentSubmit(e)} variant="outline-success">
+                <Button disabled={isAssessmentSubmitted} className='submit-btn w-100 btn-block mb-5' onClick={(e) => handleAssessmentSubmit(e)} variant="outline-success">
                     {
-                        loading ? <Loader /> : 'Submit'
+                        isAssessmentSubmitted ? 'Exam paper submitted' : (loading ? <Loader /> : 'Submit')
                     }
                 </Button>
             </div>

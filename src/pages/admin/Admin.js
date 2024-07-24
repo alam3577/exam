@@ -130,8 +130,8 @@ function Admin() {
             <Table striped bordered hover responsive="sm" size="sm">
                 <thead>
                     <tr>
-                        <th>Name</th>
                         <th>Batch</th>
+                        <th>Exam</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -140,13 +140,13 @@ function Admin() {
                         loading ? <Loader /> :
                             examData?.map(elem => (
                                 <tr key={elem?.id} onClick={() => setCurrentId(elem?.id)}>
-                                    <td>{elem?.name}</td>
-                                    <td>{elem?.batch_name}</td>
-                                    <td className='d-flex gap-3'>
+                                    <td style={{ minWidth: '7.2rem' }}>{elem?.batch_name}</td>
+                                    <td style={{ minWidth: '7.2rem' }}>{elem?.name}</td>
+                                    <td style={{ minWidth: '7.2rem' }} className='d-flex gap-3'>
                                         {/* <Button className='btn btn-sm' variant="outline-success">Edit</Button> */}
-                                        <Button onClick={() => navigate(`/candidate-details/${elem?.batch_id}/${elem?.id}`)} className='btn btn-sm' variant="outline-success">Details</Button>
-                                        <Button onClick={() => showMessModal(elem?.id, elem?.batch_id)} className='btn btn-sm' variant="outline-success">Link</Button>
-                                        <Button onClick={(elem) => showConfirmationModal(elem?.id)} className='btn btn-sm' variant="outline-danger">{elem?.id === currentId && contentLoading ? <Loader /> : 'Delete'}</Button>
+                                        <div style={{ color: 'blue', minWidth: '3.2rem' }} onClick={() => navigate(`/candidate-details/${elem?.batch_id}/${elem?.id}`)} className='btn btn-sm' >View</div>
+                                        <Button style={{ minWidth: '5.2rem' }} onClick={() => showMessModal(elem?.id, elem?.batch_id)} className='btn btn-sm' variant="outline-success">Share Link</Button>
+                                        {/* <Button onClick={(elem) => showConfirmationModal(elem?.id)} className='btn btn-sm' variant="outline-danger">{elem?.id === currentId && contentLoading ? <Loader /> : 'Delete'}</Button> */}
                                     </td>
                                 </tr>
                             ))

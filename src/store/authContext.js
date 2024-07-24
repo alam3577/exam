@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from "react";
 // import { GoogleAuthProvider } from "firebase/auth";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "../firbase/firebase";
+import { admins } from './../utils/healper';
 
 const AuthContext = React.createContext();
 
@@ -24,7 +25,10 @@ export function AuthProvider({ children }) {
 
     async function initializeUser(user) {
         if (user) {
-
+            if (admins.includes(user?.email)) {
+                console.log({user})
+                setIsAdmin(true);
+            }
             setCurrentUser({ ...user });
 
             // check if provider is email and password login
@@ -53,7 +57,8 @@ export function AuthProvider({ children }) {
         isEmailUser,
         isGoogleUser,
         currentUser,
-        setCurrentUser
+        setCurrentUser,
+        isAdmin
     };
 
     return (
