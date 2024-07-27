@@ -12,6 +12,11 @@ code {
     monospace;
 }
 
+*{
+  color: #373737
+  /* color: red */
+}
+
 .login-main-container {
   width: 80%;
   margin: auto;
@@ -54,7 +59,7 @@ code {
 .candidate-title {
   font-size: larger;
   font-weight: 500;
-  margin: auto;
+  /* margin: auto; */
   padding: 2rem 0;
 }
 
@@ -118,8 +123,8 @@ code {
 
 .evaluation-search-title {
   display: flex;
-  justify-content: center;
-  align-items: center;
+  /* justify-content: center;
+  align-items: center; */
   gap: 5px;
   flex-direction: column;
 }

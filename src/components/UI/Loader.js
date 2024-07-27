@@ -1,11 +1,11 @@
 import React from 'react'
 import { Spinner } from 'react-bootstrap'
 
-function Loader() {
+function Loader({color}) {
     return (
-        <div className='d-flex gap-2 justify-content-between align-items-center'>
+        <div className='d-flex'>
             <Spinner
-                style={{ color: 'green' }}
+                style={{ color: color ? color : 'green' }}
                 as="span"
                 animation="grow"
                 size="sm"
@@ -13,7 +13,7 @@ function Loader() {
                 color='green'
                 aria-hidden="true"
             />
-            Loading...
+            <span style={{ color: color ? color : 'black' }}>Loading...</span>
         </div>
     )
 }

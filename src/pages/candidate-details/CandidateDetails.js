@@ -182,22 +182,22 @@ function CandidateDetails() {
     return (
         <div className='container'>
             <div className='d-flex flex-column justify-content-start py-3'>
-                <div className='text-capitalize fw-bold'>Batch Name : {candidaDetails?.batch_name && candidaDetails?.batch_name}</div>
-                <div className='text-capitalize fw-bold'>Exam Name : {candidaDetails?.name && candidaDetails?.name}</div>
+                <div className='text-capitalize fw-bold'>Batch Name: <span className='fw-medium'>{candidaDetails?.batch_name && candidaDetails?.batch_name}</span></div>
+                <div className='text-capitalize fw-bold'>Exam Name: <span className='fw-medium'>{candidaDetails?.name && candidaDetails?.name}</span></div>
                 {/* <Button onClick={() => handleAddCandidate()} className='btn btn-sm' variant="outline-success">Add Candidate</Button> */}
             </div>
-            <Form.Label style={{ fontWeight: '600' }}>Filter Lead</Form.Label>
+            <Form.Label style={{ fontWeight: '600' }}>Select Leader</Form.Label>
             <Form.Select value={candidateFilterLead} onChange={handleLeadFilterChange} aria-label="Default select example">
-                <option value=''>Select Lead</option>
+                <option value=''>All</option>
                 {
                     candidateLead?.map(elem => (
                         <option key={elem} value={elem}>{elem}</option>
                     ))
                 }
             </Form.Select>
-            <Form.Label style={{ fontWeight: '600' }}>Filter Status</Form.Label>
-            <Form.Select value={candidateFilterStatus} onChange={handleStatusFilterChange} aria-label="Default select example">
-                <option value=''>Select Status</option>
+            <Form.Label style={{ fontWeight: '600' }}>Select Status</Form.Label>
+            <Form.Select className="mb-5" value={candidateFilterStatus} onChange={handleStatusFilterChange} aria-label="Default select example">
+                <option value=''>All</option>
                 {
                     candidateStatus?.map(elem => (
                         <option key={elem} value={elem}>{obj[elem]}</option>
@@ -208,8 +208,8 @@ function CandidateDetails() {
             <Table striped bordered hover responsive size="sm">
                 <thead>
                     <tr>
-                        <th>Name</th>
                         <th>Roll No</th>
+                        <th>Name</th>
                         <th>Status</th>
                         <th>Leader</th>
                         <th>Action</th>
@@ -220,8 +220,8 @@ function CandidateDetails() {
                         loading ? <Loader /> :
                             (candidateData || [])?.map(elem => (
                                 <tr key={elem?.id} onClick={() => setCurrentId(elem?.roll_number)}>
-                                    <td style={{ minWidth: '5rem' }}>{elem?.name}</td>
                                     <td style={{ minWidth: '5rem' }}>{elem?.roll_number}</td>
+                                    <td style={{ minWidth: '5rem' }}>{elem?.name}</td>
                                     <td style={{ minWidth: '9rem' }}><div style={{ color: elem?.type === 'completed' ? 'green' : elem?.type === 'pending' ? 'orange' : 'red' }}>{elem?.status}</div></td>
                                     <td style={{ minWidth: '5rem' }}>{elem?.leader}</td>
                                     <td className='d-flex gap-3'>

@@ -79,8 +79,8 @@ function EvaluationSearch() {
   return (
     <div style={{ width: "80%", margin: 'auto' }}>
       <div className='evaluation-search-title'>
-        <div className='evaluation-search-name'>Name: {candidateData?.candidate_name || 'Candidate Name'}</div>
-        <div className='evaluation-search-roll'>Roll Number: {candidateData?.roll_number}</div>
+        <div className='evaluation-search-name'>Name: <span style={{fontWeight: 'normal !important' }} className='fw-medium'>{candidateData?.candidate_name || 'Candidate Name'}</span></div>
+        <div className='evaluation-search-roll'>Roll Number: <span style={{fontWeight: 'normal !important' }} className='fw-medium'>{candidateData?.roll_number}</span> </div>
       </div>
       <div className='evaluation-search-tab'>
         <Nav fill variant="tabs" defaultActiveKey="/home">
@@ -118,7 +118,7 @@ function EvaluationSearch() {
           }} rows={3} />
         </Form.Group>
       </Form>
-      <Button onClick={handleUpdate} className='w-100' variant='outline-success mb-4'>
+      <Button onClick={handleUpdate} className='w-100' variant='success mb-4'>
         {loadingContent ? <Loader /> : 'Submit'}
         </Button>
       <Modal isOpen={modalOpen} onClose={handleCloseModal} imageUrl={selectedImage} />

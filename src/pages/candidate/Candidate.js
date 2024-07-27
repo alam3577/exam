@@ -116,11 +116,13 @@ function Candidate() {
     useEffect(() => {
         (async () => {
             if (id && batchId && rollNumber) {
-                const res = await findFilteredCandidateData({examId: id, batchId: batchId, rollNumber: rollNumber});
-                if(res?.length && res?.evaluation_details?.evaluation_status === 'pending'){
+                const res = await findFilteredCandidateData({ examId: id, batchId: batchId, rollNumber: rollNumber });
+                console.log({ sajjad: res });
+                const submission = res?.find(elem => elem.submission_locked === 'true')
+                if (submission) {
                     setIsAssessmentSubmitted(true)
                 }
-                console.log({ res });
+                console.log({ sajjadA: submission });
             }
         })()
     }, [rollNumber, id, batchId])
@@ -167,6 +169,7 @@ function Candidate() {
             });
             setCapturedImages([]);
             setImageURL([]);
+            setIsAssessmentSubmitted(true)
             toast.success('Congratulation, you have successfully submitted the assessment')
         } catch (error) {
             console.log({ error })
@@ -183,6 +186,7 @@ function Candidate() {
 
 
     const handleRollNoChange = (e) => {
+        setIsAssessmentSubmitted(false)
         const roll = e.target.value;
         setRollNumber(roll);
         const selectedCandidate = [...candidateData]?.find(elem => elem.roll_number === roll);
@@ -194,10 +198,10 @@ function Candidate() {
         <div className='main-container'>
             {!userLoggedIn && (<Navigate to={'/login'} replace={true} />)}
             <div className='candidate-title text-capitalize'>
-            <div className='text-capitalize m-auto'>Semester Name: {examDetails?.batch_name ? examDetails?.batch_name : null}</div>
-            <div className='text-capitalize m-auto'>Exam Name: {examDetails?.name ? examDetails?.name : null}</div>
+                <div className='text-capitalize '>Semester Name: <span className="fw-medium">{examDetails?.batch_name ? examDetails?.batch_name : null}</span></div>
+                <div className='text-capitalize'>Exam Name: <span className="fw-medium">{examDetails?.name ? examDetails?.name : null}</span></div>
             </div>
-            <div className='w-100'>
+            <div className='w-100 mb-4'>
                 <Form.Select aria-label="Default select example" onChange={(e) => handleRollNoChange(e)}>
                     <option value=''>Select Roll No.</option>
                     {
@@ -210,37 +214,39 @@ function Candidate() {
             <div>
                 {Object.entries(selectedCandidate)?.length ?
                     <>
-                        <div>Name: {selectedCandidate?.name || userName}</div>
-                        <div>Place: {selectedCandidate?.place}</div>
+                        <div><span className="fw-bold">Name:</span> {selectedCandidate?.name || userName}</div>
+                        <div><span className="fw-bold">Place:</span> {selectedCandidate?.place}</div>
                     </> : null
                 }
                 {/* <div>Email: {userEmail}</div> */}
             </div>
-            <div className='image-container'>
-                {capturedImages.map((image, index) => (
-                    <div key={index} className='image-list'> <img onClick={() => handleImageClick(image)} src={image} alt={`captured ${index}`} style={{ width: '100%', height: '100%' }} />
-                        <span onClick={() => handleImageRemoval(index)} className='close-img'><IoIosCloseCircle style={{ borderRadius: '50%', backgroundColor: 'white' }} color='red' size='1.5rem' /></span>
-                    </div>
-                ))}
-            </div>
-            <div className='capture-image d-flex flex-column gap-4 w-100'>
-                <div>
-                    <button className="camera-btn" style={{ margin: 'auto' }} onClick={openCamera}><div><FaCamera size='1.8rem' color="gray" /><div>Camera</div></div> </button>
-                    <input
-                        type="file"
-                        accept="image/*"
-                        capture="environment"
-                        ref={fileInputRef}
-                        onChange={handleImageUpload}
-                        style={{ display: 'none' }}
-                    />
+           { !isAssessmentSubmitted ? <>
+                <div className='image-container'>
+                    {capturedImages.map((image, index) => (
+                        <div key={index} className='image-list'> <img onClick={() => handleImageClick(image)} src={image} alt={`captured ${index}`} style={{ width: '100%', height: '100%' }} />
+                            <span onClick={() => handleImageRemoval(index)} className='close-img'><IoIosCloseCircle style={{ borderRadius: '50%', backgroundColor: 'white' }} color='red' size='1.5rem' /></span>
+                        </div>
+                    ))}
                 </div>
-                <Button disabled={isAssessmentSubmitted} className='submit-btn w-100 btn-block mb-5' onClick={(e) => handleAssessmentSubmit(e)} variant="outline-success">
-                    {
-                        isAssessmentSubmitted ? 'Exam paper submitted' : (loading ? <Loader /> : 'Submit')
-                    }
-                </Button>
-            </div>
+                <div className='capture-image d-flex flex-column gap-4 w-100'>
+                    <div>
+                        <button className="camera-btn" style={{ margin: 'auto' }} onClick={openCamera}><div><FaCamera size='1.8rem' color="gray" /><div>Camera</div></div> </button>
+                        <input
+                            type="file"
+                            accept="image/*"
+                            capture="environment"
+                            ref={fileInputRef}
+                            onChange={handleImageUpload}
+                            style={{ display: 'none' }}
+                        />
+                    </div>
+                    <Button disabled={isAssessmentSubmitted} className='submit-btn w-100 btn-block mb-5' onClick={(e) => handleAssessmentSubmit(e)} variant="success">
+                        {
+                            isAssessmentSubmitted ? 'Exam paper submitted' : (loading ? <Loader color='white'/> : 'Submit')
+                        }
+                    </Button>
+                </div>
+            </> : <p className="mt-3 fw-bold text-success">**You Submitted the Assessment**</p>}
             <Modal isOpen={modalOpen} onClose={handleCloseModal} imageUrl={selectedImage} />
         </div>
     )
